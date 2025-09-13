@@ -13,6 +13,7 @@ config();
 import { initializeDatabase } from './config/database';
 import authRoutes from './routes/auth';
 import patientRoutes from './routes/patients';
+import visitRoutes from './routes/visits';
 import { errorHandler } from './middleware/error';
 import { notFoundHandler } from './middleware/notFound';
 
@@ -105,6 +106,7 @@ class AfyaTrackServer {
     // API routes
     this.app.use('/api/v1/auth', authRoutes);
     this.app.use('/api/v1/patients', patientRoutes);
+    this.app.use('/api/v1/visits', visitRoutes);
 
     // Root endpoint
     this.app.get('/', (req, res) => {
@@ -147,6 +149,7 @@ class AfyaTrackServer {
 📊 Health: http://localhost:${this.port}/health
 🔐 Auth: http://localhost:${this.port}/api/v1/auth
 👥 Patients: http://localhost:${this.port}/api/v1/patients
+🏥 Visits: http://localhost:${this.port}/api/v1/visits
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         `);
       });
