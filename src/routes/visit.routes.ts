@@ -52,6 +52,92 @@ router.post('/',
 );
 
 /**
+ * @route   POST /api/v1/visits/:visitId/audio
+ * @desc    Upload audio file for a visit
+ * @access  Private (Doctor, Nurse, Admin)
+ */
+router.post('/:visitId/audio',
+  authenticate,
+  authorize(UserRole.DOCTOR, UserRole.NURSE, UserRole.ADMIN),
+  validateUUID('visitId'),
+  authorizeVisitAccess,
+  asyncHandler(async (req, res) => {
+    const { uploadAudioFile } = await import('../middleware/upload.middleware');
+    
+    uploadAudioFile(req, res, async (err: any) => {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message || 'Audio upload failed'
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'No audio file provided'
+        });
+      }
+
+      const visitId = req.params.visitId;
+      if (!visitId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Visit ID is required'
+        });
+      }
+
+      // Update visit with audio file path
+      const audioFilePath = `/uploads/${req.file.filename}`;
+      const visit = await visitService.updateVisit(visitId, { audioFilePath });
+
+      return res.json({
+        success: true,
+        message: 'Audio file uploaded successfully',
+        data: {
+          visit,
+          audioFile: {
+            filename: req.file.filename,
+            path: audioFilePath,
+            size: req.file.size,
+            mimetype: req.file.mimetype
+          }
+        }
+      });
+    });
+  })
+);
+
+/**
+ * @route   POST /api/v1/visits/:visitId/generate-notes
+ * @desc    Generate SOAP notes from visit transcript using AI
+ * @access  Private (Doctor, Nurse, Admin)
+ */
+router.post('/:visitId/generate-notes',
+  authenticate,
+  authorize(UserRole.DOCTOR, UserRole.NURSE, UserRole.ADMIN),
+  validateUUID('visitId'),
+  authorizeVisitAccess,
+  asyncHandler(async (req, res) => {
+    const visitId = req.params.visitId;
+    if (!visitId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Visit ID is required'
+      });
+    }
+
+    const visit = await visitService.generateClinicalNotes(visitId);
+    
+    return res.json({
+      success: true,
+      message: 'Clinical notes generated successfully',
+      data: visit
+    });
+  })
+);
+
+/**
  * @route   GET /api/v1/visits
  * @desc    Get visits with pagination and filtering
  * @access  Private (Doctor, Nurse, Admin)

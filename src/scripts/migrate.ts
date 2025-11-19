@@ -13,23 +13,18 @@ async function runMigrations(): Promise<void> {
     const schemaPath = path.join(process.cwd(), 'src/database/schema.sql');
     const schema = fs.readFileSync(schemaPath, 'utf8');
     
-    // Split the schema into individual statements
-    const statements = schema
-      .split(';')
-      .map(stmt => stmt.trim())
-      .filter(stmt => stmt.length > 0);
-    
-    console.log(`Executing ${statements.length} SQL statements...`);
-    
-    // Execute each statement
-    for (const statement of statements) {
-      try {
-        await dbManager.run(statement);
-      } catch (error) {
-        console.error(`Error executing statement: ${statement.substring(0, 100)}...`);
-        throw error;
-      }
-    }
+    // Execute the entire schema at once using exec
+    // This handles triggers and multi-statement SQL correctly
+    await new Promise<void>((resolve, reject) => {
+      dbManager.getDatabase().exec(schema, (err) => {
+        if (err) {
+          console.error('Error executing schema:', err);
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
     
     console.log('Database migration completed successfully!');
     

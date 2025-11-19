@@ -12,6 +12,7 @@ import {
   SOAPNotes
 } from '../types';
 import { logDatabase } from '../config/logger';
+import { aiService } from './ai.service';
 
 export class VisitService {
   /**
@@ -293,9 +294,11 @@ export class VisitService {
               values.push(value);
               break;
             default:
-              if (['transcript', 'status', 'duration'].includes(key)) {
+              if (['transcript', 'status', 'duration', 'audioFilePath'].includes(key)) {
                 const dbField = key === 'transcript' ? 'transcript' : 
-                               key === 'status' ? 'status' : 'duration';
+                               key === 'status' ? 'status' : 
+                               key === 'duration' ? 'duration' :
+                               'audio_file_path';
                 fields.push(`${dbField} = ?`);
                 values.push(value);
               }
@@ -446,6 +449,33 @@ export class VisitService {
         updatedAt: new Date(visit.updated_at),
         doctorName: `${visit.doctor_first_name} ${visit.doctor_last_name}`
       })) as Visit[];
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Generate clinical SOAP notes from visit transcript using AI
+   */
+  public async generateClinicalNotes(visitId: string): Promise<Visit> {
+    try {
+      // Get the visit
+      const visit = await this.getVisitById(visitId);
+
+      // Check if transcript exists
+      if (!visit.transcript || visit.transcript.trim().length === 0) {
+        throw new AppError('Visit must have a transcript to generate clinical notes', 400);
+      }
+
+      // Generate SOAP notes using AI service
+      const soapNotes = await aiService.generateSOAPNotes(visit.transcript);
+
+      // Update visit with generated SOAP notes
+      const updatedVisit = await this.updateVisit(visitId, { soapNotes });
+
+      logDatabase('AI_NOTES_GENERATED', 'visits', { visitId });
+
+      return updatedVisit;
     } catch (error) {
       throw error;
     }

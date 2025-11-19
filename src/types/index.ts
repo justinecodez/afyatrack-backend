@@ -167,10 +167,11 @@ export interface CreateVisitRequest {
 export interface UpdateVisitRequest {
   chiefComplaint?: string;
   transcript?: string;
+  audioFilePath?: string;
   soapNotes?: SOAPNotes;
   status?: VisitStatus;
   duration?: number;
-  followUpDate?: string;
+  followUpDate?: Date | string;
 }
 
 // Database Response Types
