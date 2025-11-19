@@ -1,0 +1,1000 @@
+{
+  "info": {
+    "name": "AfyaTrack API Collection",
+    "description": "Complete API collection for testing AfyaTrack backend implementations\n\nThis collection includes:\n- Simple Backend (Port 5001) - Basic authentication and endpoints\n- Full Backend (Port 5000) - Complete feature set with patients, visits, and SOAP generation\n\nDemo Credentials:\n- Email: admin@afyatrack.com\n- Password: AfyaTrack123!\n\nUsage:\n1. Import this collection into Postman\n2. Set the environment variables (baseUrl, token)\n3. Run the authentication requests first to get tokens\n4. Use the stored tokens for authenticated requests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "simpleBackendUrl",
+      "value": "http://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "fullBackendUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "patientId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "visitId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Simple Backend (Port 5001)",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{simpleBackendUrl}}/health",
+              "host": ["{{simpleBackendUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check if the simple backend is running and healthy"
+          },
+          "response": []
+        },
+        {
+          "name": "API Information",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{simpleBackendUrl}}/api",
+              "host": ["{{simpleBackendUrl}}"],
+              "path": ["api"]
+            },
+            "description": "Get API information and available endpoints"
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (responseCode.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.token) {",
+                  "        pm.collectionVariables.set('authToken', response.data.token);",
+                  "        pm.collectionVariables.set('userId', response.data.user.id);",
+                  "        console.log('Token saved:', response.data.token.substring(0, 20) + '...');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@afyatrack.com\",\n  \"password\": \"AfyaTrack123!\"\n}"
+            },
+            "url": {
+              "raw": "{{simpleBackendUrl}}/api/v1/auth/login",
+              "host": ["{{simpleBackendUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Authenticate user and get access token"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{simpleBackendUrl}}/api/v1/auth/logout",
+              "host": ["{{simpleBackendUrl}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            },
+            "description": "Logout user and invalidate token"
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints for the simple backend implementation (JavaScript version)\n\nFeatures:\n- Basic authentication\n- Health checks\n- Simple API structure"
+    },
+    {
+      "name": "Full Backend (Port 5000)",
+      "item": [
+        {
+          "name": "System",
+          "item": [
+            {
+              "name": "Health Check",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{fullBackendUrl}}/health",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["health"]
+                },
+                "description": "Check system health including database connectivity"
+              },
+              "response": []
+            },
+            {
+              "name": "API Information",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api"]
+                },
+                "description": "Get comprehensive API information and documentation"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Authentication",
+          "item": [
+            {
+              "name": "Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (responseCode.code === 200) {",
+                      "    const response = pm.response.json();",
+                      "    if (response.success && response.data.token) {",
+                      "        pm.collectionVariables.set('authToken', response.data.token);",
+                      "        pm.collectionVariables.set('userId', response.data.user.id);",
+                      "        if (response.data.refreshToken) {",
+                      "            pm.collectionVariables.set('refreshToken', response.data.refreshToken);",
+                      "        }",
+                      "        console.log('Full backend token saved');",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"admin@afyatrack.com\",\n  \"password\": \"AfyaTrack123!\"\n}"
+                },
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/auth/login",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "auth", "login"]
+                },
+                "description": "Authenticate with full backend and get access/refresh tokens"
+              },
+              "response": []
+            },
+            {
+              "name": "Refresh Token",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/auth/refresh",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "auth", "refresh"]
+                },
+                "description": "Refresh access token using refresh token"
+              },
+              "response": []
+            },
+            {
+              "name": "Logout",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/auth/logout",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "auth", "logout"]
+                },
+                "description": "Logout and invalidate tokens"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Current User",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/auth/me",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "auth", "me"]
+                },
+                "description": "Get current authenticated user information"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Patients",
+          "item": [
+            {
+              "name": "Get All Patients",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/patients?page=1&limit=10",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "patients"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Get paginated list of patients"
+              },
+              "response": []
+            },
+            {
+              "name": "Search Patients",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/patients?search=John&page=1&limit=10",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "patients"],
+                  "query": [
+                    {
+                      "key": "search",
+                      "value": "John"
+                    },
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Search patients by name, phone, or NHIF number"
+              },
+              "response": []
+            },
+            {
+              "name": "Create Patient",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (responseCode.code === 201) {",
+                      "    const response = pm.response.json();",
+                      "    if (response.success && response.data.id) {",
+                      "        pm.collectionVariables.set('patientId', response.data.id);",
+                      "        console.log('Patient created with ID:', response.data.id);",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Doe\",\n  \"dateOfBirth\": \"1985-03-15\",\n  \"gender\": \"male\",\n  \"phone\": \"+255123456789\",\n  \"email\": \"john.doe@example.com\",\n  \"address\": \"Dar es Salaam, Tanzania\",\n  \"nhifNumber\": \"NHIF123456\",\n  \"emergencyContact\": {\n    \"name\": \"Jane Doe\",\n    \"phone\": \"+255987654321\",\n    \"relationship\": \"spouse\"\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/patients",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "patients"]
+                },
+                "description": "Create a new patient record"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Patient by ID",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/patients/{{patientId}}",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "patients", "{{patientId}}"]
+                },
+                "description": "Get detailed patient information by ID"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Patient",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+255111222333\",\n  \"address\": \"Updated Address, Dar es Salaam\"\n}"
+                },
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/patients/{{patientId}}",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "patients", "{{patientId}}"]
+                },
+                "description": "Update patient information"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Patient",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/patients/{{patientId}}",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "patients", "{{patientId}}"]
+                },
+                "description": "Delete patient record"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Visits",
+          "item": [
+            {
+              "name": "Get All Visits",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/visits?page=1&limit=10",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "visits"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Get paginated list of visits"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Visits by Patient",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/visits?patientId={{patientId}}&page=1&limit=10",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "visits"],
+                  "query": [
+                    {
+                      "key": "patientId",
+                      "value": "{{patientId}}"
+                    },
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Get visits for a specific patient"
+              },
+              "response": []
+            },
+            {
+              "name": "Create Visit",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (responseCode.code === 201) {",
+                      "    const response = pm.response.json();",
+                      "    if (response.success && response.data.id) {",
+                      "        pm.collectionVariables.set('visitId', response.data.id);",
+                      "        console.log('Visit created with ID:', response.data.id);",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"visitDate\": \"2025-08-22T10:00:00.000Z\",\n  \"chiefComplaint\": \"Maumivu ya kichwa na homa\",\n  \"currentIllness\": \"Patient anajiandaa na maumivu ya kichwa na homa kwa siku 3\",\n  \"medicalHistory\": \"Hakuna historia ya magonjwa makuu\",\n  \"physicalExam\": \"Vital signs: BP 120/80, Temp 38.5C, HR 95\",\n  \"assessment\": \"Viral upper respiratory infection\",\n  \"plan\": \"Rest, fluids, paracetamol 1g QID\",\n  \"status\": \"active\"\n}"
+                },
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/visits",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "visits"]
+                },
+                "description": "Create a new visit record"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Visit by ID",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/visits/{{visitId}}",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "visits", "{{visitId}}"]
+                },
+                "description": "Get detailed visit information by ID"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Visit",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"completed\",\n  \"plan\": \"Updated treatment plan: Continue paracetamol, follow up in 3 days\",\n  \"nextAppointment\": \"2025-08-25T10:00:00.000Z\"\n}"
+                },
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/visits/{{visitId}}",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "visits", "{{visitId}}"]
+                },
+                "description": "Update visit information"
+              },
+              "response": []
+            },
+            {
+              "name": "Generate SOAP Note",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"chiefComplaint\": \"Maumivu ya kichwa na homa\",\n  \"currentIllness\": \"Patient anajiandaa na maumivu ya kichwa na homa kwa siku 3. Hakuna kikohozi au mafua. Appetite ni normal.\",\n  \"medicalHistory\": \"Hakuna historia ya magonjwa makuu. Hakuna dawa za kudumu.\",\n  \"physicalExam\": \"Vital signs: BP 120/80 mmHg, Temp 38.5°C, HR 95 bpm, RR 18/min. HEENT: Normal. Chest: Clear bilaterally. CVS: Regular rhythm.\"\n}"
+                },
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/visits/generate-soap",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "visits", "generate-soap"]
+                },
+                "description": "Generate SOAP note from visit data"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Visit",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/visits/{{visitId}}",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "visits", "{{visitId}}"]
+                },
+                "description": "Delete visit record"
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "description": "Endpoints for the full backend implementation (TypeScript version)\n\nFeatures:\n- Complete authentication with refresh tokens\n- Patient management\n- Visit documentation\n- SOAP note generation\n- Comprehensive error handling"
+    },
+    {
+      "name": "Test Scenarios",
+      "item": [
+        {
+          "name": "Complete Patient Flow",
+          "item": [
+            {
+              "name": "1. Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Login successful', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "    const response = pm.response.json();",
+                      "    pm.expect(response.success).to.be.true;",
+                      "    pm.expect(response.data.token).to.exist;",
+                      "    pm.collectionVariables.set('authToken', response.data.token);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"admin@afyatrack.com\",\n  \"password\": \"AfyaTrack123!\"\n}"
+                },
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/auth/login",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "auth", "login"]
+                }
+              }
+            },
+            {
+              "name": "2. Create Patient",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Patient created successfully', function () {",
+                      "    pm.response.to.have.status(201);",
+                      "    const response = pm.response.json();",
+                      "    pm.expect(response.success).to.be.true;",
+                      "    pm.expect(response.data.id).to.exist;",
+                      "    pm.collectionVariables.set('patientId', response.data.id);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Maria Mwangi\",\n  \"dateOfBirth\": \"1990-05-20\",\n  \"gender\": \"female\",\n  \"phone\": \"+255765432109\",\n  \"address\": \"Mwanza, Tanzania\",\n  \"nhifNumber\": \"NHIF789012\"\n}"
+                },
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/patients",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "patients"]
+                }
+              }
+            },
+            {
+              "name": "3. Create Visit",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Visit created successfully', function () {",
+                      "    pm.response.to.have.status(201);",
+                      "    const response = pm.response.json();",
+                      "    pm.expect(response.success).to.be.true;",
+                      "    pm.expect(response.data.id).to.exist;",
+                      "    pm.collectionVariables.set('visitId', response.data.id);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"patientId\": \"{{patientId}}\",\n  \"visitDate\": \"2025-08-22T14:00:00.000Z\",\n  \"chiefComplaint\": \"Tumbo kuumwa na kuhara\",\n  \"currentIllness\": \"Patient ameanza na tumbo kuumwa na kuhara tangu jana usiku\",\n  \"status\": \"active\"\n}"
+                },
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/visits",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "visits"]
+                }
+              }
+            },
+            {
+              "name": "4. Generate SOAP",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('SOAP note generated', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "    const response = pm.response.json();",
+                      "    pm.expect(response.success).to.be.true;",
+                      "    pm.expect(response.data.subjective).to.exist;",
+                      "    pm.expect(response.data.objective).to.exist;",
+                      "    pm.expect(response.data.assessment).to.exist;",
+                      "    pm.expect(response.data.plan).to.exist;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"chiefComplaint\": \"Tumbo kuumwa na kuhara\",\n  \"currentIllness\": \"Patient ameanza na tumbo kuumwa na kuhara tangu jana usiku. Hakuna damu au makamasi. Ameanza kupoteza maji.\",\n  \"medicalHistory\": \"Hakuna historia ya magonjwa makuu\",\n  \"physicalExam\": \"Patient anajihisi vibaya, dehydrated kidogo. Abdomen: tender diffusely, bowel sounds hyperactive\"\n}"
+                },
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/visits/generate-soap",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "visits", "generate-soap"]
+                }
+              }
+            },
+            {
+              "name": "5. Update Visit with SOAP",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{authToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"assessment\": \"Acute gastroenteritis\",\n  \"plan\": \"ORS, rest, bland diet. RTC if symptoms worsen\",\n  \"status\": \"completed\",\n  \"recommendations\": [\n    \"Drink plenty of fluids (ORS)\",\n    \"Avoid dairy and spicy foods\",\n    \"Return if symptoms persist >48 hours\"\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{fullBackendUrl}}/api/v1/visits/{{visitId}}",
+                  "host": ["{{fullBackendUrl}}"],
+                  "path": ["api", "v1", "visits", "{{visitId}}"]
+                }
+              }
+            }
+          ],
+          "description": "Complete workflow test for patient management and visit documentation"
+        }
+      ]
+    }
+  ]
+}
